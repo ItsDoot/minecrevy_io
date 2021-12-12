@@ -1,10 +1,10 @@
-pub use codec::*;
 pub use frame::*;
 pub use io::*;
+pub use rw::*;
 
-mod codec;
 mod frame;
 mod io;
+mod rw;
 
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Hash)]
 pub enum ProtocolState {
@@ -30,6 +30,7 @@ pub struct ProtocolVersion {
 impl ProtocolVersion {
     pub const V_1_16_4: Self = Self::new(754, &["1.16.4", "1.16.5"]);
 
+    /// Returns all known protocol versions.
     pub const fn all() -> &'static [Self] {
         &[Self::V_1_16_4]
     }
@@ -41,10 +42,12 @@ impl ProtocolVersion {
         }
     }
 
+    /// Returns the number that identifies this protocol version.
     pub const fn protocol(&self) -> i32 {
         self.protocol
     }
 
+    /// Returns the list of game versions supported by this protocol version.
     pub const fn names(&self) -> &'static [&'static str] {
         self.names
     }

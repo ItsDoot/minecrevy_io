@@ -4,7 +4,7 @@ use std::num::NonZeroUsize;
 
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
-use crate::{AsyncReadMcExt, ReadMcExt, var_i32_byte_length, WriteMcExt};
+use crate::{AsyncReadMcExt, ProtocolState, ProtocolVersion, ReadMcExt, var_i32_byte_length, WriteMcExt};
 
 #[derive(Clone, Eq, PartialEq, Debug, Hash)]
 pub struct PacketFrame {
@@ -71,15 +71,19 @@ impl PacketFrame {
         self.id
     }
 
-    pub fn body(&self) -> impl Read + Seek + '_ {
+    pub fn reader(&self) -> impl Read + Seek + '_ {
         Cursor::new(&self.body)
+    }
+
+    pub fn writer(&mut self) -> impl Write + '_  {
+        &mut self.body
     }
 }
 
-pub trait FromPacketFrame: Sized {
-    fn from(frame: &PacketFrame) -> Self;
+pub trait PacketDecode: Sized {
+    fn decode(frame: &PacketFrame, state: &ProtocolState, version: ProtocolVersion) -> io::Result<Self>;
 }
 
-pub trait ToPacketFrame: Sized {
-    fn into(&self) -> PacketFrame;
+pub trait PacketEncode: Sized {
+    fn encode(&self, state: &ProtocolState, version: ProtocolVersion) -> io::Result<PacketFrame>;
 }
